@@ -1,0 +1,37 @@
+services:
+  postgres:
+    build:
+      context: ../db
+
+    env_file:
+      - ../db/.env
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U linux_backend_api_user" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ../../backend
+
+    env_file:
+      - ../../backend/.env
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+
+volumes:
+  postgres_data:
